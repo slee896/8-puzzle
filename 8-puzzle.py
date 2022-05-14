@@ -26,7 +26,7 @@ def EXPAND(node, new_depth):
             child.append(State(board, goal, new_depth))
     return child  # child: expanded nodes
 
-#A* MISTILED. h(x) is the number of different tiles from the goal. 
+#A* WITH MISTILED. h(x) is the number of different tiles from the goal. 
 def ASTAR_Mistiled(nodes):
     def f(node):
         return h(node) + g(node)
@@ -48,7 +48,7 @@ def ASTAR_Mistiled(nodes):
             nodes[i] = tmp_node
     return nodes
 
-#A* MISTILED. h(x) is sum of |(y-2)-(y-1)| + |(x-2)-(x-1)|, x: row, y: column 
+#A* WITH MANHATTAN DISTANCE. h(x) is sum of |(y-2)-(y-1)| + |(x-2)-(x-1)|, x: row, y: column 
 def ASTAR_Manhattan(nodes):
     def f(node):
         return h(node) + g(node)
