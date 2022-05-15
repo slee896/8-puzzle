@@ -1,18 +1,26 @@
 from math import sqrt
+import time
 
 #A NODE STATE
 class State:
-    def __init__(self, board, goal, depth=0, f=-1):
-        self.board = board
-        self.goal = goal
-        self.depth = depth
-        self.f = f
+    def __init__(self, board, goal, depth=0, path=[], f=-1):
+        self.board = board      # deployment of numbers on 3x3 board
+        self.goal = goal        # [1,2,3,4,5,6,7,8,0]
+        self.depth = depth      # depth
+        self.path = path        # trace
+        self.f = f              # A* f value
 
-    def __lf__(self, other):
+    def __lt__(self, other):
         return self.f < other.f
+# Trace printer
+def path_return(node):
+    for i in range(len(node.path)):
+        print('--PATH[',i,']--','f=',node.path[i].f)
+        for j in range(n):
+            print(" ",node.path[i].board[j*n:(j+1)*n])
 
-#EXPAND CHILD FUNCTION 
-def EXPAND(node, new_depth):
+# EXPAND CHILD function
+def EXPAND(node, new_depth, path, n):
     pos_blank = node.board.index(0)  # Find blank position
     row, col = pos_blank // n, pos_blank % n
     print("position row:", row, "position col:", col)
@@ -23,59 +31,53 @@ def EXPAND(node, new_depth):
             pos_next = nextrow * n + nextcol
             board = node.board[:]
             board[pos_blank], board[pos_next] = board[pos_next], board[pos_blank]  # swap
-            child.append(State(board, goal, new_depth))
+            child.append(State(board, goal, new_depth, path))
     return child  # child: expanded nodes
 
-#A* WITH MISTILED. h(x) is the number of different tiles from the goal. 
-def ASTAR_Mistiled(nodes):
+# A* MISTILED. h(x) is the number of different tiles from the goal.
+def ASTAR_Mistiled(nodes, visited):
     def f(node):
         return h(node) + g(node)
-
     def h(node):
         return sum([1 if node.board[i] != node.goal[i] else 0 for i in range(len(node.board))])
-
     def g(node):
         return node.depth
 
-    tmp_node = nodes[0]
-
+#Sorting, node[0] will be the best f node among open nodes
     for i in range(len(nodes)):
         if nodes[i].f == -1:
             nodes[i].f = f(nodes[i])
-        if nodes[0].f > nodes[i].f:
-            tmp_node = nodes[0]
+        if nodes[i] < nodes[0]:
+            tmp_node2 = nodes[0]
             nodes[0] = nodes[i]
-            nodes[i] = tmp_node
+            nodes[i] = tmp_node2
     return nodes
 
-#A* WITH MANHATTAN DISTANCE. h(x) is sum of |(y-2)-(y-1)| + |(x-2)-(x-1)|, x: row, y: column 
+# A* MISTILED. h(x) is sum of |(y-2)-(y-1)| + |(x-2)-(x-1)|, x: row, y: column
 def ASTAR_Manhattan(nodes):
     def f(node):
         return h(node) + g(node)
-
     def h(node):
         distance = 0
         for i in range(1, N):  # LOOP N times, N = problem size, N is in the main function.
-            n_pos, g_pos = node.board.index(i), node.goal.index(i)
+            #n_pos: node position of i(1~N), g_pos: goal position of i(1~N)
+            n_pos, g_pos = node.board.index(i), goal.index(i)
             n_row, n_col = n_pos // n, n_pos % n
             g_row, g_col = g_pos // n, g_pos % n
             distance += abs(n_row - g_row) + abs(n_col - g_col)
         return distance
-
     def g(node):
         return node.depth
-
-    tmp_node = nodes[0]
     for i in range(len(nodes)):
-        if nodes[i].f == -1:
-            nodes[i].f = f(nodes[i])
-        if nodes[0].t > nodes[i].f:
-            tmp_node = nodes[0]
+        nodes[i].f = f(nodes[i])    #Calculate f value
+        if nodes[i] < nodes[0]:     #Less f node moves to nodes[0]
+            tmp_node2 = nodes[0]
             nodes[0] = nodes[i]
-            nodes[i] = tmp_node
+            nodes[i] = tmp_node2
     return nodes
 
-def UNICOST(nodes):  # place the minimum depth node to nodes[0]
+# Uniform cost function
+def UNICOST(nodes):
     for i in range(len(nodes)):
         if nodes[0].depth > nodes[i].depth:
             tmp_node = nodes[0]
@@ -83,7 +85,15 @@ def UNICOST(nodes):  # place the minimum depth node to nodes[0]
             nodes[i] = tmp_node
     return nodes
 
+# Print traces
+def traces(nodes, n):
+    for i in range(len(nodes)):
+        print("----------PATH",i,"----------")
+        for j in range(0, n):
+            print(nodes[i].board[n*j:n*(j+1)])
+
 if __name__ == '__main__':
+#### Setting problems
     print("Welcome to 8-Puzzle solver\n")
     print("------------Puzzle selection------------\n", "1. 8-puzzle given problems\n 2. Custom problem.\n")
     puzzle_selection = 0
@@ -114,6 +124,7 @@ if __name__ == '__main__':
             print("Type numbers", pow(custom_size, 2) - i, "times more.\n")
             custom_prob.append(int(input()))
         problem = custom_prob
+### Define variables
     N = len(problem)
     n = int(sqrt(N))
     print("------------Algorithm selection------------\n",
@@ -122,31 +133,34 @@ if __name__ == '__main__':
     while mode not in [1, 2, 3]:  # MODE 1 = UNIFORM COST, MODE 2 = A* with Mistiled, MODE 3 = A* with Manhattan
         mode = int(input())
 
-    goal = [i for i in range(1, N)] + [0]  # Initialize goal.
-    nodes = []  # 1D-Array, It will include 'State(node)' instances.
-    current = State(problem, goal)
-    nodes.append(current)
-    visited = []
-    depth = 0
-    # print("nodesize: ", len(nodes))#qsize())rr
-    max_expanded_node = 0  # MAX_QUEUE_SIZE
+    goal = [i for i in range(1, N)] + [0]   # Initialize goal.
+    nodes = []                              # 1D-Array, It will include 'State(node)' instances.
+    current = State(problem, goal)          # Current node
+    nodes.append(current)                   # Open node array
+    visited = []                            # Visited node array
+    depth = 0                               # For updating node's depth
+    path= []                                # For updating node's traces
+    max_expanded_node = 0                   # MAX_QUEUE_SIZE check
     OPERATORS = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # up, down, left, right / to compute with (ROW, COLUMN)
-    while (1):  # LOOP UNTIL IT IS SUCCESS OR THERE IS NO CHILD
-        print(len(nodes))
+
+    time_start = time.time()
+#### LOOP start
+    while (1):
+        # FAILURE TEST
         if len(nodes) == 0:
             print("failure\n")
             break
-        # print("current", current.board)
-        current = nodes.pop(0)  # remove FRONT-NODE of nodes.
-        # print("current after pop", current.board)
-        if current.board == goal:  # GOAL-TEST
+        current = nodes.pop(0)          # remove FRONT-NODE of nodes.
+        depth = current.depth + 1       # To update node information
+        path = current.path + [current] # To update node information
+
+        # GOAL TEST
+        if current.board == goal:
             print("Success")
             break
-        depth = current.depth + 1
-        # print("BEFORE EXPAND, current=",current.board)
         # EXPAND CHILD
-        for state in EXPAND(current, depth):
-            # print("EXPAND CHILD:",state)
+        # If a child is a new one, add a child into 'nodes'
+        for state in EXPAND(current, depth, path, n):
             flag = False
             for i in range(0, len(visited)):
                 if (state.board == visited[i].board):
@@ -159,16 +173,10 @@ if __name__ == '__main__':
                         break
             if flag is False:
                 nodes.append(state)
-        # UPDATE VISITED NODES
-        visited.append(current)
-        print("Current board: ", current.board, "Current depth:", current.depth)
 
-        print("closed queue:", len(visited), "\n")
-        print("current node:", current.board, "\n")
-        print("expanded queue size:", len(nodes), "\n")
         if ((len(nodes)) > max_expanded_node):  # COUNT #OF MAX EXPANDED NODES.
             max_expanded_node = len(nodes)
-
+        visited.append(current)                 # Check current node is visited
         # QUEUEING FUNCTION. NEXT NODE SHOULD BE nodes[0]
         if mode == 1:
             nodes = UNICOST(nodes)
@@ -176,7 +184,11 @@ if __name__ == '__main__':
             nodes = ASTAR_Mistiled(nodes)
         if mode == 3:
             nodes = ASTAR_Manhattan(nodes)
-        ######### LOOP AGAIN  ###############
-        
-    print("MAX EXPANDED NODES:", max_expanded_node, "\n")
-    print("DEPTH:", current.depth, "\n")
+
+    time_end = time.time()
+#### PRINT RESULTS
+    path_return(current) # return traces and f value
+    print("\n")
+    print(f"{time_end - time_start:.5f} sec")
+    print("MAX EXPANDED NODES:", max_expanded_node)
+    print("DEPTH:", current.depth)
