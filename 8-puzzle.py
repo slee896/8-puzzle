@@ -23,7 +23,6 @@ def path_return(node):
 def EXPAND(node, new_depth, path, n):
     pos_blank = node.board.index(0)  # Find blank position
     row, col = pos_blank // n, pos_blank % n
-    print("position row:", row, "position col:", col)
     child = []
     for i in (range(len(OPERATORS))):
         nextrow, nextcol = row + OPERATORS[i][0], col + OPERATORS[i][1]
