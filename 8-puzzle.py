@@ -42,7 +42,7 @@ def ASTAR_Mistiled(nodes, visited):
     def g(node):
         return node.depth
 
-#Sorting, node[0] will be the best f node among open nodes
+    #Sorting, node[0] will be the best f node among open nodes
     for i in range(len(nodes)):
         if nodes[i].f == -1:
             nodes[i].f = f(nodes[i])
@@ -60,14 +60,14 @@ def ASTAR_Manhattan(nodes):
         distance = 0
         for i in range(1, N):  # LOOP N times, N = problem size, N is in the main function.
             #n_pos: node position of i(1~N), g_pos: goal position of i(1~N)
-            n_pos, g_pos = node.board.index(i), goal.index(i)
+            n_pos, g_pos = node.board.index(i), node.goal.index(i)
             n_row, n_col = n_pos // n, n_pos % n
             g_row, g_col = g_pos // n, g_pos % n
             distance += abs(n_row - g_row) + abs(n_col - g_col)
         return distance
     def g(node):
         return node.depth
-    for i in range(len(nodes)):
+    for i in range(len(nodes)-1,0,-1):
         nodes[i].f = f(nodes[i])    #Calculate f value
         if nodes[i] < nodes[0]:     #Less f node moves to nodes[0]
             tmp_node2 = nodes[0]
@@ -163,11 +163,15 @@ if __name__ == '__main__':
             flag = False
             for i in range(0, len(visited)):
                 if (state.board == visited[i].board):
+                    if (state.f < visited[i].f):
+                        visited[i] = state
                     flag = True
                     break
             if flag is False:
                 for j in range(0, len(nodes)):
                     if (state.board == nodes[j].board):
+                        if (state.f < nodes[j].f):
+                            nodes[j] = state
                         flag = True
                         break
             if flag is False:
