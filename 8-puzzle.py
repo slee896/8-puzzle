@@ -34,22 +34,17 @@ def EXPAND(node, new_depth, path, n):
     return child  # child: expanded nodes
 
 # A* MISTILED. h(x) is the number of different tiles from the goal.
-def ASTAR_Mistiled(nodes, visited):
+def ASTAR_Mistiled(nodes):
     def f(node):
         return h(node) + g(node)
     def h(node):
         return sum([1 if node.board[i] != node.goal[i] else 0 for i in range(len(node.board))])
     def g(node):
         return node.depth
-
-    #Sorting, node[0] will be the best f node among open nodes
-    for i in range(len(nodes)):
-        if nodes[i].f == -1:
-            nodes[i].f = f(nodes[i])
-        if nodes[i] < nodes[0]:
-            tmp_node2 = nodes[0]
-            nodes[0] = nodes[i]
-            nodes[i] = tmp_node2
+    for i in range(len(nodes)-1,0,-1):
+        nodes[i].f = f(nodes[i])    #Calculate f value
+        if nodes[i] < nodes[0]:     #Less f node moves to nodes[0]
+            nodes[0], nodes[i] = nodes[i], nodes[0]
     return nodes
 
 # A* MISTILED. h(x) is sum of |(y-2)-(y-1)| + |(x-2)-(x-1)|, x: row, y: column
@@ -70,9 +65,7 @@ def ASTAR_Manhattan(nodes):
     for i in range(len(nodes)-1,0,-1):
         nodes[i].f = f(nodes[i])    #Calculate f value
         if nodes[i] < nodes[0]:     #Less f node moves to nodes[0]
-            tmp_node2 = nodes[0]
-            nodes[0] = nodes[i]
-            nodes[i] = tmp_node2
+            nodes[0], nodes[i] = nodes[i], nodes[0]
     return nodes
 
 # Uniform cost function
@@ -83,13 +76,6 @@ def UNICOST(nodes):
             nodes[0] = nodes[i]
             nodes[i] = tmp_node
     return nodes
-
-# Print traces
-def traces(nodes, n):
-    for i in range(len(nodes)):
-        print("----------PATH",i,"----------")
-        for j in range(0, n):
-            print(nodes[i].board[n*j:n*(j+1)])
 
 if __name__ == '__main__':
 #### Setting problems
@@ -156,20 +142,23 @@ if __name__ == '__main__':
         # GOAL TEST
         if current.board == goal:
             print("Success")
+            current.path = current.path + [current]
             break
         # EXPAND CHILD
         # If a child is a new one, add a child into 'nodes'
         for state in EXPAND(current, depth, path, n):
             flag = False
+# If the state is already visited, will not be appended.
             for i in range(0, len(visited)):
                 if (state.board == visited[i].board):
                     if (state.f < visited[i].f):
                         visited[i] = state
                     flag = True
                     break
+# If the state is already opened, will not be appended.
             if flag is False:
                 for j in range(0, len(nodes)):
-                    if (state.board == nodes[j].board):
+                    if (state.board == nodes[j].board) and (state.f is not -1):
                         if (state.f < nodes[j].f):
                             nodes[j] = state
                         flag = True
