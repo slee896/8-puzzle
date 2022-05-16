@@ -87,7 +87,7 @@ if __name__ == '__main__':
         puzzle_selection = int(input())
     if (puzzle_selection == 1):
         print("------------Problem selection------------\n",
-              "1. depth0 \n 2. depth2\n 3. depth4\n 4. depth8\n 5. depth12\n 6. depth=16\n 7. depth 20\n 8. depth24")
+              "1. depth0 \n 2. depth2\n 3. depth4\n 4. depth8\n 5. depth12\n 6. depth16\n 7. depth 20\n 8. depth24")
         given_prob = []
         given_prob.append([1, 2, 3, 4, 5, 6, 7, 8, 0])
         given_prob.append([1, 2, 3, 4, 5, 6, 0, 7, 8])
